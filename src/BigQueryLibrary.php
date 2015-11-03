@@ -75,7 +75,7 @@ class BigQueryLibrary {
 	/**
 	 * @return \Exception|\Google_Service_Bigquery_ProjectList|mixed
 	 */
-	public function getProjectsList(){
+	public function bigQueryGetProjectsList(){
 		$projectList =  $this->bigqueryService->projects->listProjects();
 		return $projectList->getProjects();
 	}
@@ -84,7 +84,7 @@ class BigQueryLibrary {
 	 * @param $project_id
 	 * @return \Exception|\Google_Service_Bigquery_DatasetList|mixed
 	 */
-	public function getDatasetList($project_id){
+	public function bigQueryGetDatasetList($project_id){
 		$datasetList =  $this->bigqueryService->datasets->listDatasets($project_id);
 		return $datasetList->getDatasets();
 	}

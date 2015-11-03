@@ -11,13 +11,13 @@ $test = $this->bigQueryGetTables('projectid', 'dataset');
 
 $test = $this->bigQueryGetTableDetails('projectid', 'dataset', 'table');
 
-$test = $this->getProjectsList();
+$test = $this->bigQueryGetProjectsList();
 
-$test = $this->getDatasetList('projectid');
+$test = $this->bigQueryGetDatasetList('projectid');
 
 $test = $this->bigQueryGetTableData('projectid', 'dataset', 'table', array('maxResults' => 10));
 
-$sql = 'SELECT * FROM [ppn_sales_test.sales] LIMIT 3';
+$sql = 'SELECT * FROM [sales] LIMIT 3';
 $test = $this->bigQuerySql('projectid', $sql);
 
 $test = $this->bigQueryLoadDataExistingTable('projectid', 'dataset', 'table', 'gs://bucket/ill.csv', 1);
