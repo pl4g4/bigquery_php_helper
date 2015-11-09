@@ -11,6 +11,6 @@
         "google/apiclient": "dev-master"
     },
     "autoload": {
-        "psr-4": { "src\\BigQueryLibrary": "src" }
+        "psr-4": { "src\\BigQueryLibrary\\": "src" }
     }
 }
