@@ -45,6 +45,13 @@ class BigQueryLibrary {
 		$io->setOptions($curlOptions);
 		$this->client->setIo($io);*/
 
+		if ($this->client->getAuth()->isAccessTokenExpired() || $this->client->getAccessToken() == NULL || $this->client->getAccessToken() == '') {
+			$auth = new Google_Auth_OAuth2($this->client);
+			$auth->refreshTokenWithAssertion($cred);
+			$token = $auth->getAccessToken();
+		    $this->client->setAccessToken($token);
+		}
+
 		// Instantiate a new BigQuery Client
 		$this->bigqueryService = new Google_Service_Bigquery($this->client);
 
