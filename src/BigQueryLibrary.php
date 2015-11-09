@@ -13,51 +13,29 @@ namespace src\BigQueryLibrary;
 class BigQueryLibrary {
 
 	private $bigqueryService;
-	private $project_id;
-	private $request;
-	private $client_id;
 	private $email_address;
 	private $key_file_location;
-	private $scopes;
 	private $client;
-	private $app_name;
-	private $clientSecretKey;
 
 	/**
 	 * @param string $key_location
 	 * @param string $email_address
-	 * @param string $client_id
-	 * @param string $app_name
-	 * @param string $project_id
-	 * @param string $clientSecretKey
 	 */
-	function __construct($key_location, $email_address, $client_id, $clientSecretKey, $app_name = 'BigQueryTest', $project_id = ''){
+	function __construct($key_location, $email_address){
 
-		$this->project_id = $project_id;
-		$this->app_name = $app_name;
-		$this->clientSecretKey = $clientSecretKey;
-
-		$this->client_id = $client_id;
 		$this->email_address = $email_address;
 		$this->key_file_location = $key_location;
 
 		$this->client = new Google_Client();
-		$this->client->setApplicationName($this->app_name);
-
 		$key = file_get_contents($this->key_file_location);
-
-		$this->scopes ="https://www.googleapis.com/auth/bigquery";
 
 		$cred = new Google_Auth_AssertionCredentials(
 			$this->email_address,
-			array($this->scopes),
+			Google_Service_Bigquery::BIGQUERY,
 			$key
 		);
 
-		$this->client->setClientId($this->client_id);
 		$this->client->setAssertionCredentials($cred);
-		$this->client->setClientSecret($clientSecretKey);
-		$this->client->setCache(new Google_Cache_Null($this->client));
 
 		//setup proxy if neccesary
 		/*$io = new Google_IO_Curl($this->client);
