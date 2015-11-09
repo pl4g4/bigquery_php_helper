@@ -1,6 +1,5 @@
 {
     "name": "pl4g4/bigquery_php_helper",
-    "type": "library",
     "description": "Small class to extend bigquery main functionality",
     "authors": [
         {
@@ -12,6 +11,6 @@
         "google/apiclient": "dev-master"
     },
     "autoload": {
-        "psr-4": { "src\\BigQueryLibrary": "src" }
+        "psr-0": { "src\\BigQueryLibrary": "src" }
     }
 }
