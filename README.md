@@ -31,3 +31,34 @@ $payload = array(
 $test = $this->bigQueryStreaming('projectid', 'dataset', 'table', $payload);
 ```
 
+
+###Install 
+
+- Include the following code inside your composer.json
+
+```
+{
+	"repositories": [{
+	    "type": "package",
+	    "package": {
+	        "name": "pl4g4/bigquery_php_helper",
+	        "version": "master",
+	        "source": {
+	            "url": "https://github.com/pl4g4/bigquery_php_helper.git",
+	            "type": "git",
+	            "reference": "master"
+	        },
+	        "autoload": {
+                "psr-4" : {
+                    "pl4g4\\bigquery_php_helper\\" : "src"
+                }
+            }
+	    }
+	}],
+	"require": {
+	  "google/apiclient": "1.0.*@beta",
+	  "pl4g4/bigquery_php_helper": "dev-master"
+	}
+}
+```
+
