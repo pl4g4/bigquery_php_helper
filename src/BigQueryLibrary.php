@@ -243,32 +243,6 @@ class BigQueryLibrary {
 
 		return $response;
 
-		//The URL which does the actual streaming to BigQuery
-		/*$url = 'http://bigquery.streaming.ie/StreamToBigQuery.php';
-
-		$post_params = array();+
-		foreach ($payload as $key => &$val) {
-			if (is_array($val)) $val = implode(',', $val);
-			$post_params[] = $key . '=' . urlencode($val);
-		}
-
-		$post_string = implode('&', $post_params);
-		$parts = parse_url($url);
-
-		$fp = pfsockopen($parts['host'],
-			isset($parts['port']) ? $parts['port'] : 8080, $errno, $errstr, 5);
-
-		$parts['path'] .= '?' . $post_string;
-		$out = "POST " . $parts['path'] . " HTTP/1.1\r\n";
-		$out .= "Host: " . $parts['host'] . "\r\n";
-		$out .= "Content-Type: application/x-www-form-urlencoded\r\n";
-		$out .= "Content-Length: " . strlen($post_string) . "\r\n";
-		$out .= "Connection: Close\r\n\r\n";
-		if (isset($post_string)) $out .= $post_string;
-
-		fwrite($fp, $out);
-		fclose($fp);*/
-
 	}
 
 } 
