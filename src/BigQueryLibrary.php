@@ -57,21 +57,46 @@ class BigQueryLibrary {
 
 	}
 
-	/**
+/**
 	 * @return \Exception|\Google_Service_Bigquery_ProjectList|mixed
 	 */
-	public function bigQueryGetProjectsList(){
+	public function getProjectsList(){
+
 		$projectList =  $this->bigqueryService->projects->listProjects();
-		return $projectList->getProjects();
+
+		$count = 0;
+		$projects = array();
+		foreach($projectList as $project){
+			$projects['project_'.$count]['friendlyName'] = $project->friendlyName;
+			$projects['project_'.$count]['id'] = $project->id;
+			$projects['project_'.$count]['kind'] = $project->kind;
+			$count++;
+		}
+
+		return $projects;
+
 	}
 
 	/**
 	 * @param $project_id
 	 * @return \Exception|\Google_Service_Bigquery_DatasetList|mixed
 	 */
-	public function bigQueryGetDatasetList($project_id){
-		$datasetList =  $this->bigqueryService->datasets->listDatasets($project_id);
-		return $datasetList->getDatasets();
+	public function getDatasetList($project_id){
+
+		$datasetList =  $this->bigqueryService->datasets->listDatasets($project_id)->getDatasets();
+
+		$count = 0;
+		$dataset = array();
+		foreach($datasetList as $set){
+			$dataset['dataset_'.$count]['friendlyName'] = $set->friendlyName;
+			$dataset['dataset_'.$count]['id'] = $set->id;
+			$dataset['dataset_'.$count]['kind'] = $set->kind;
+			$count++;
+		}
+
+
+		return $dataset;
+
 	}
 
 	/**
@@ -80,8 +105,21 @@ class BigQueryLibrary {
 	 * @return \Exception|\Google_Service_Bigquery_TableList|mixed
 	 */
 	public function bigQueryGetTables($project_id, $dataSet) {
+
 		$tables = $this->bigqueryService->tables->listTables($project_id, $dataSet);
-		return $tables->getTables();
+
+		$count = 0;
+		$result = array();
+		foreach($tables as $table){
+			$result['table_'.$count]['friendlyName'] = $table->friendlyName;
+			$result['table_'.$count]['id'] = $table->id;
+			$result['table_'.$count]['kind'] = $table->kind;
+			$result['table_'.$count]['type'] = $table->type;
+			$count++;
+		}
+
+		return $result;
+
 	}
 
 	/**
@@ -91,14 +129,25 @@ class BigQueryLibrary {
 	 * @return array|\Exception|\Google_Service_Bigquery_Table
 	 */
 	public function bigQueryGetTableDetails($project_id, $dataSet, $tableId) {
+
 		$tableDetails = $this->bigqueryService->tables->get($project_id, $dataSet, $tableId);
+
+		$fields = array();
+		$count = 0;
+		foreach($tableDetails->getSchema() as $field) {
+			$fields['field_'.$count]['name'] = $field->name;
+			$fields['field_'.$count]['type'] = $field->type;
+			$count++;
+		}
+
 		return array(
-			'schema' => $tableDetails->getSchema(),
+			'schema' => $fields,
 			'description' => $tableDetails->getDescription(),
 			'creationTime' => $tableDetails->getCreationTime(),
 			'friendlyName' => $tableDetails->getFriendlyName(),
 			'NumRows' => $tableDetails->getNumRows(),
 		);
+
 	}
 
 	/**
@@ -109,8 +158,30 @@ class BigQueryLibrary {
 	 * @return array|\Exception
 	 */
 	public function bigQueryGetTableData($project_id, $dataSet, $tableId, $params = array()) {
+
 		$tableData = $this->bigqueryService->tabledata->listTabledata($project_id, $dataSet, $tableId, $params);
-		return array( 'rows' => $tableData->getRows(), 'count' => $tableData->count(), 'totalRows' => $tableData->getTotalRows());
+
+		$rows = $tableData->getRows();
+		$newResults = array();
+		$count = 0;
+		foreach ($rows as $row) {
+			$newRow = array();
+			$fieldCount = 0;
+			foreach ($row['f'] as $field) {
+				$newRow['field_'.$fieldCount] = $field['v'];
+				$fieldCount++;
+			}
+
+			$newResults['row_'.$count] = $newRow;
+			$count++;
+		}
+
+		return array(
+			'rows' => $newResults,
+			'count' => $tableData->count(),
+			'totalRows' => $tableData->getTotalRows()
+		);
+
 	}
 
 
@@ -122,13 +193,12 @@ class BigQueryLibrary {
 	 */
 	public function bigQuerySql($project_id, $sql, $params = array()) {
 
-		$query = new Google_Service_Bigquery_QueryRequest();
+		$query = new \Google_Service_Bigquery_QueryRequest();
 		$query->setQuery($sql);
 
 		$result = $this->bigqueryService->jobs->query($project_id, $query, $params);
 		$fieldsOject = $result->getSchema()->getFields();
 		$rows = $result->getRows();
-		$totalRows = $result->getTotalRows();
 		$totalCount = $result->count();
 
 		$fields = array();
@@ -149,7 +219,7 @@ class BigQueryLibrary {
 			$count++;
 		}
 
-		return array('count' => $totalCount, 'totalRows' => $totalRows, 'results' => $newResults);
+		return array('count' => $totalCount, 'results' => $newResults);
 
 	}
 
@@ -164,13 +234,13 @@ class BigQueryLibrary {
 	public function bigQueryLoadDataExistingTable($project_id, $dataSet, $tableId, $csvPath, $skipLeadingRows = 1){
 
 		// Information about the destination table
-		$destination_table = new Google_Service_Bigquery_TableReference();
+		$destination_table = new \Google_Service_Bigquery_TableReference();
 		$destination_table->setProjectId($project_id);
 		$destination_table->setDatasetId($dataSet);
 		$destination_table->setTableId($tableId);
 
 		// Set the load configuration, including source file(s) and schema
-		$load_configuration = new Google_Service_Bigquery_JobConfigurationLoad();
+		$load_configuration = new \Google_Service_Bigquery_JobConfigurationLoad();
 		//'gs://YOUR_GOOGLE_CLOUD_STORAGE_BUCKET/file.csv'
 		$load_configuration->setSourceUris(array($csvPath));
 		$load_configuration->setDestinationTable($destination_table);
@@ -178,17 +248,17 @@ class BigQueryLibrary {
 		$load_configuration->sourceFormat = 'CSV';
 		$load_configuration->setwriteDisposition('WRITE_APPEND');
 
-		$job_configuration = new Google_Service_Bigquery_JobConfiguration();
+		$job_configuration = new \Google_Service_Bigquery_JobConfiguration();
 		$job_configuration->setLoad($load_configuration);
 
-		$job = new Google_Service_Bigquery_Job();
+		$job = new \Google_Service_Bigquery_Job();
 		$job->setKind('load');
 		$job->setConfiguration($job_configuration);
 
 		$jobs = $this->bigqueryService->jobs;
 		$response = $jobs->insert($project_id, $job);
 
-		$jobStatus = new Google_Service_Bigquery_JobStatus();
+		$jobStatus = new \Google_Service_Bigquery_JobStatus();
 		$status = $response->getStatus();
 
 		if ($jobStatus->count() != 0) {
@@ -213,8 +283,20 @@ class BigQueryLibrary {
 	 * @return \Exception|mixed
 	 */
 	public function bigQueryGetJobsList($project_id, $params = array()){
-		$jobsList = $this->bigqueryService->jobs->listJobs($project_id, $params);
-		return $jobsList->getJobs();
+
+		$jobsList = $this->bigqueryService->jobs->listJobs($project_id, $params)->getJobs();
+
+		$count = 0;
+		$jobs = array();
+		foreach($jobsList as $job){
+			$jobs['job_'.$count]['id'] = $job->id;
+			$jobs['job_'.$count]['kind'] = $job->kind;
+			$jobs['job_'.$count]['state'] = $job->state;
+			$jobs['job_'.$count]['userEmail'] = $job->userEmail;
+			$count++;
+		}
+
+		return $jobs;
 	}
 
 	/**
@@ -229,20 +311,52 @@ class BigQueryLibrary {
 		//check this instructions
 		//http://blog.shinetech.com/2014/08/25/put-on-your-streaming-shoes/
 
-		$payload = json_decode(json_encode($payload));
-
 		$rows = array();
-		$row = new Google_Service_Bigquery_TableDataInsertAllRequestRows;
-		$row->setJson($payload);
-		$row->setInsertId(null);
-		$rows[0] = $row;
-		$request = new Google_Service_Bigquery_TableDataInsertAllRequest;
+
+		foreach ($payload as $k => $v) {
+			$row = new \Google_Service_Bigquery_TableDataInsertAllRequestRows;
+			$row->setJson($payload);
+			//$row->setInsertId(null);
+			//$row->setInsertId( strtotime('now') );
+			$rows[] = $row;
+		}
+
+		$request = new \Google_Service_Bigquery_TableDataInsertAllRequest;
 		$request->setKind('bigquery#tableDataInsertAllRequest');
 		$request->setRows($rows);
 		$response = $this->bigqueryService->tabledata->insertAll($project_id, $dataSet, $tableId, $request);
 
-		return $response;
+		$result = $response->getInsertErrors();
 
+		if(!empty($result)){
+			$errors = array();
+			$count = 0;
+			foreach($result as $error){
+
+				$vars = $this->get_object_vars_all($error);
+				$errors['error_'.$count]['index'] = $error->index;
+				$errors['error_'.$count]['error'] = $vars['modelData']['errors'];
+				$count++;
+
+			}
+
+			$result = $errors;
+
+		}else{
+
+			$result = 'data was inserted';
+
+		}
+
+		return $result;
+
+	}
+
+	//get protected variables from class .... hacky way
+	function get_object_vars_all($obj) {
+		$objArr = substr(str_replace(get_class($obj)."::__set_state(","",var_export($obj,true)),0,-1);
+		eval("\$values = $objArr;");
+		return $values;
 	}
 
 } 
